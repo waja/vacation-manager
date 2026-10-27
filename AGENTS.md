@@ -26,11 +26,11 @@
 
 - Treat all user input as untrusted, including email addresses, subject text, addresses, dates, and message contents.
 - Escape values according to Sieve syntax; never interpolate untrusted strings without appropriate encoding.
-- Validate the generated script with `sievec` before installation.
+- Validate the generated script with `sievec` before installation. Direct compiler output to a disposable temporary location and clean it up; never let validation create compiler artifacts in the managed destination.
 - On validation or compiler failure, do not alter an existing destination.
-- Install files atomically and prevent paths derived from email input from escaping the configured base directory.
+- Publish new files atomically with no-replace semantics, so concurrent invocations cannot overwrite a script installed by another invocation. Do not rely on a check-then-rename sequence, because the absence check races. Prevent paths derived from email input from escaping the configured base directory.
 - Never overwrite an existing vacation script by default. Any overwrite behavior must be explicit and documented.
-- Manage only the `.sieve` source. Do not write or delete `.svbin` files and do not restart or reload Dovecot.
+- Manage only the `.sieve` source in the configured destination. Any `.svbin` output needed for `sievec` validation must be directed to a disposable temporary location and removed afterward. Do not create, replace, or delete `.svbin` files in the managed destination, and do not restart or reload Dovecot.
 - Tests must use temporary directories and must not write to `/var/customers/sieve` or require a live mail system.
 
 ## Testing and quality
