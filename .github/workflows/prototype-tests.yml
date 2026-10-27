@@ -1,0 +1,77 @@
+name: Prototype tests
+
+on:
+  pull_request:
+    branches: [development]
+  push:
+    branches: [development]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  language-prototypes:
+    name: Language prototype tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+          cache: false
+
+      - name: Run Bash prototype tests
+        run: bash prototypes/bash/test.sh
+
+      - name: Run Python prototype tests
+        run: python -m unittest discover -s prototypes/python -v
+
+      - name: Run Go prototype tests
+        working-directory: prototypes/go
+        run: go test -v ./...
+
+  sievec-compatibility:
+    name: sievec on ${{ matrix.distribution }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distribution:
+          - debian:bookworm
+          - debian:trixie
+          - ubuntu:24.04
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Compile valid Sieve fixture and reject invalid fixture
+        env:
+          DISTRIBUTION: ${{ matrix.distribution }}
+        run: |
+          docker run --rm \
+            --volume "${GITHUB_WORKSPACE}:/workspace:ro" \
+            --env DEBIAN_FRONTEND=noninteractive \
+            "${DISTRIBUTION}" \
+            sh -eu -c '
+              apt-get update
+              apt-get install -y --no-install-recommends dovecot-sieve
+              command -v sievec
+              temporary_directory=$(mktemp -d)
+              trap "rm -rf \"$temporary_directory\"" EXIT
+              sievec /workspace/tests/sieve/valid.sieve "$temporary_directory/valid.svbin"
+              test -s "$temporary_directory/valid.svbin"
+              if sievec /workspace/tests/sieve/invalid.sieve "$temporary_directory/invalid.svbin"; then
+                echo "Invalid Sieve fixture unexpectedly compiled" >&2
+                exit 1
+              fi
+              test ! -e "$temporary_directory/invalid.svbin"
+            '
