@@ -10,7 +10,7 @@ The tool is intended for systems that use Dovecot and Pigeonhole Sieve. Froxlor 
 
 - Generate a Sieve vacation script for an email address and a configured absence period.
 - Validate the generated script with `sievec` before installing it.
-- Install only the `.sieve` source file. Do not manage the generated `.svbin` file or restart/reload Dovecot; Pigeonhole handles compilation as needed.
+- Install only the `.sieve` source file in the managed destination. For validation, direct any `.svbin` output from `sievec` to a disposable temporary location and clean it up; never leave compiler artifacts in the managed destination. Do not manage destination `.svbin` files or restart/reload Dovecot; Pigeonhole handles compilation as needed.
 - Operate non-interactively and fail safely with actionable errors.
 - Keep runtime dependencies minimal and avoid control-panel-specific behavior.
 
@@ -48,7 +48,7 @@ The implementation is expected to:
 - Run `sievec` against the generated script before installation.
 - Leave the current target untouched if validation or compilation fails.
 - Avoid overwriting an existing script unless explicitly requested.
-- Install the validated source atomically.
+- Publish a new script atomically with no-replace semantics, so concurrent invocations cannot overwrite one another. A check that the destination is absent followed by an ordinary rename is not sufficient because the check can race.
 - Use temporary directories in tests rather than the production default path.
 
 The exact Sieve conditions and required capabilities will be checked against Dovecot/Pigeonhole behavior and documented before release.
