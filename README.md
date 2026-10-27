@@ -66,7 +66,7 @@ The project uses these branch conventions:
 
 ## Testing and continuous integration
 
-Automated tests are a project requirement. GitHub Actions must run the test suite and configured code-quality checks for every pull request targeting `development` and every push to `development`. The pipeline must exercise the software itself; linting alone is not sufficient. The initial implementation PR must introduce the CI workflow together with meaningful tests. Local test and lint commands will be documented here when the test tooling is selected.
+Automated tests are a project requirement. GitHub Actions must run the required baseline test suite and configured code-quality checks for every pull request targeting `development` and every push to `development`. These required checks must not be skipped based on changed paths or a judgment that a change is unrelated; the pipeline must exercise the software itself, not just lint it or check the environment. Additional specialized or expensive jobs, such as a Sieve compiler compatibility matrix, may use path-based change detection to avoid unnecessary work for unrelated changes. Keep manual or scheduled compatibility runs available where useful. The initial implementation PR must introduce the CI workflow together with meaningful tests. Local test and lint commands will be documented here when the test tooling is selected.
 
 ## License
 
