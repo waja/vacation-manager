@@ -1,0 +1,57 @@
+# AGENTS.md
+---
+
+## Project scope
+
+- Build a small, non-interactive Python CLI for generating and safely installing Dovecot/Pigeonhole Sieve vacation scripts.
+- Froxlor is the current target environment, not a runtime dependency. Do not couple core behavior to Froxlor.
+- Treat GitHub Issue #1 as the living requirements record. Update it when material requirements or design decisions change.
+
+## Language and documentation
+
+- Write project documentation, code comments, CLI help, errors, tests, and commit messages in English.
+- Keep the README accurate as implementation and supported behavior evolve.
+- Document user-visible options, defaults, prerequisites, and safety behavior.
+- Do not document planned features as implemented; clearly label unfinished areas.
+
+## Design principles
+
+- Prefer the Python standard library and avoid unnecessary runtime dependencies.
+- Keep the CLI non-interactive. Invalid input or operational failures must produce a useful error and a non-zero exit status.
+- Keep responsibilities small and testable: argument/config handling, validation, Sieve generation, compiler validation, and installation.
+- Prefer explicit, readable code over generic frameworks or speculative extensibility.
+- Do not introduce Froxlor-specific logic where standard Dovecot/Pigeonhole integration is sufficient.
+
+## Sieve and filesystem safety
+
+- Treat all user input as untrusted, including email addresses, subject text, addresses, dates, and message contents.
+- Escape values according to Sieve syntax; never interpolate untrusted strings without appropriate encoding.
+- Validate the generated script with `sievec` before installation. Direct compiler output to a disposable temporary location and clean it up; never let validation create compiler artifacts in the managed destination.
+- On validation or compiler failure, do not alter an existing destination.
+- Publish new files atomically with no-replace semantics, so concurrent invocations cannot overwrite a script installed by another invocation. Do not rely on a check-then-rename sequence, because the absence check races. Prevent paths derived from email input from escaping the configured base directory.
+- Never overwrite an existing vacation script by default. Any overwrite behavior must be explicit and documented.
+- Manage only the `.sieve` source in the configured destination. Any `.svbin` output needed for `sievec` validation must be directed to a disposable temporary location and removed afterward. Do not create, replace, or delete `.svbin` files in the managed destination, and do not restart or reload Dovecot.
+- Tests must use temporary directories and must not write to `/var/customers/sieve` or require a live mail system.
+
+## Testing and quality
+
+- Add tests for behavior and failure paths, including path derivation, validation, config precedence, Sieve escaping/output, compiler failure, and safe installation.
+- Tests must be deterministic and runnable locally without a production server. Isolate tests that require `sievec` and document the prerequisite.
+- Every implementation change must include appropriate automated tests; bug fixes should add regression tests where practical.
+- GitHub Actions must run the automated test suite and configured lint/quality checks on every pull request targeting `development` and every push to `development`. The pipeline must test the software, not merely lint it or check the environment.
+- Required checks must pass before a PR is considered ready to merge. Do not make the test job optional or silently skip tests because the test directory is empty.
+- Include a CI workflow with the initial implementation, so the first code PR introduces both meaningful tests and an enforced development pipeline. Document the local commands and CI behavior in the README.
+- Run the relevant test suite and configured lint/format checks before proposing changes.
+- Keep CI proportionate to the project and use it to run real tests, not just environment or image checks.
+- Do not add abstractions, validators, dependencies, or CI jobs without a concrete requirement.
+
+## Git and pull requests
+
+- Keep changes focused and commit history reviewable. Do not commit exploratory/debug churn.
+- Use short-lived branches for implementation, fixes, and documentation; open pull requests against `development`.
+- `development` is the default integration branch.
+- Reserve `master` for released and tagged versions; create it for the first release rather than using it for development.
+- Promote releases from `development` to `master` through a release pull request and tag the release commit (for example, `v1.0.0`).
+- Bring fixes made for released versions back into `development`.
+- Update the README when behavior, setup, configuration, or supported usage changes.
+- PR descriptions should state the purpose, important decisions, and checks performed.
