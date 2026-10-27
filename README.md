@@ -70,4 +70,4 @@ Automated tests are a project requirement. GitHub Actions must run the test suit
 
 ## License
 
-License information will be added before the first release.
+Vacation Manager is licensed under the **GNU General Public License, version 3 or (at your option) any later version** (SPDX: `GPL-3.0-or-later`). See [COPYING](COPYING) for the full license text.
