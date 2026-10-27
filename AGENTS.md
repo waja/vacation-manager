@@ -37,6 +37,10 @@
 
 - Add tests for behavior and failure paths, including path derivation, validation, config precedence, Sieve escaping/output, compiler failure, and safe installation.
 - Tests must be deterministic and runnable locally without a production server. Isolate tests that require `sievec` and document the prerequisite.
+- Every implementation change must include appropriate automated tests; bug fixes should add regression tests where practical.
+- GitHub Actions must run the automated test suite and configured lint/quality checks on every pull request targeting `development` and every push to `development`. The pipeline must test the software, not merely lint it or check the environment.
+- Required checks must pass before a PR is considered ready to merge. Do not make the test job optional or silently skip tests because the test directory is empty.
+- Include a CI workflow with the initial implementation, so the first code PR introduces both meaningful tests and an enforced development pipeline. Document the local commands and CI behavior in the README.
 - Run the relevant test suite and configured lint/format checks before proposing changes.
 - Keep CI proportionate to the project and use it to run real tests, not just environment or image checks.
 - Do not add abstractions, validators, dependencies, or CI jobs without a concrete requirement.
