@@ -64,7 +64,9 @@ The project uses these branch conventions:
 - `master` is reserved for released versions and will be created for the first release.
 - Releases are tagged (for example, `v1.0.0`) and promoted from `development` to `master` through a release pull request.
 
-Testing, linting, installation, and usage commands will be documented here as the corresponding implementation is added.
+## Testing and continuous integration
+
+Automated tests are a project requirement. GitHub Actions must run the test suite and configured code-quality checks for every pull request targeting `development` and every push to `development`. The pipeline must exercise the software itself; linting alone is not sufficient. The initial implementation PR must introduce the CI workflow together with meaningful tests. Local test and lint commands will be documented here when the test tooling is selected.
 
 ## License
 
